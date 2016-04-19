@@ -1,0 +1,49 @@
+﻿<#@ template language="C#" debug="false" hostspecific="true"#>
+<#@ include file="EF.Utility.CS.ttinclude"#>
+<#@ assembly name=" System.Reflection"#>
+<#@assembly name="System.Linq"#>
+<#@assembly name="System.Threading.Tasks"#>
+<#@output extension=".cs"#>
+ 
+<#
+
+    CodeGenerationTools code = new CodeGenerationTools(this);
+    MetadataLoader loader = new MetadataLoader(this);
+    CodeRegion region = new CodeRegion(this, 1);
+    MetadataTools ef = new MetadataTools(this);
+
+    string projectPath = Host.ResolveAssemblyReference("$(ProjectDir)");  
+    string inputFile1 =projectPath +@"bin\Debug\DDD.Model.dll"; 
+    // string inputFile2 =projectPath +@"bin\Debug\DDD.Enum.dll"; 
+    Assembly assembly = Assembly.LoadFile(inputFile1);
+    //assembly= Assembly.LoadFile(inputFile2); 
+
+    string namespaceName = code.VsNamespaceSuggestion();
+    EntityFrameworkTemplateFileManager fileManager = EntityFrameworkTemplateFileManager.Create(this);
+
+#>
+using System.Text;
+using DDD.IRepository;
+
+namespace DDD.Repository
+{
+    public partial class DbSession :IDbSession
+    {
+   
+<#
+    // Emit Entity Types
+
+    foreach (string  entity in assembly.GetTypes().Select(s => s.Name))
+    {
+#>	
+		public I<#=            entity#>Repository <#=            entity#>Repository
+        {
+            get
+            {
+                return new <#=            entity#>Repository();
+            }
+        }
+<#    }#>
+
+	}	
+}
